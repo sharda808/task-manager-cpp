@@ -1,7 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 #include <string>
-using  namespace std;
+using namespace std;
 class Task {
   private:
   string name;
@@ -15,10 +15,10 @@ class Task {
   void setStatus(string s);
   void setPriority(string p);
   void setDueDate(string d);
-  string getName();
-  string getStatus();
-  string getPriority();
-  string getDueDate();
-  void displayTask();
+  string getName() const;
+  string getStatus() const;
+  string getPriority() const;
+  string getDueDate() const;
+  void displayTask() const;
 };
 #endif

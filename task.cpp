@@ -21,19 +21,19 @@ priority = p;
  void Task:: setDueDate(string d) {
   duedate = d;
  }
- string Task:: getName(){
+ string Task:: getName() const{
   return name;
  }
-string Task:: getStatus(){
+string Task:: getStatus() const{
   return status;
 }
-string Task:: getPriority(){
+string Task:: getPriority() const{
   return priority;
 }
-string Task:: getDueDate(){
+string Task:: getDueDate() const{
   return duedate;
 }
-void Task:: displayTask(){
+void Task:: displayTask() const {
   cout<<"Name: "<<name<<endl;
   cout<<"Status: "<<status<<endl;
 cout<<"Priority: "<<priority<<endl;
