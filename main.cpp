@@ -1,20 +1,20 @@
+
 #include <iostream>
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <sstream>
-#include<ctime>
-#include<windows.h>
+#include <ctime>
+#include <windows.h>
 #include "Dashboard.h"
 #include "task.h"
 #include "file_manager.h"
+#include "Goal.h"
 using namespace std;
-
 
 vector<Task> tasks;
 string filename = "tasks.txt";
 int nextId = 1;
-
 
 void showMenu();
 void addTask();
@@ -23,13 +23,17 @@ void completeTask();
 void deleteTask();
 void searchTask(const vector<Task>& tasks);
 void sortByPriority(vector<Task> &tasks);
-
 void dueDateReminder(const vector<Task> & tasks);
-int calculateProductivityScore(const vector<Task> &tasks);
+int dateToNumber(const string& date);
+void autoUpdateOverdueTasks(vector<Task>& tasks);
 string getTodayDate();
+int recalcStreak(int  completedToday);
+
 int main() {
-SetConsoleOutputCP(CP_UTF8);
+    SetConsoleOutputCP(CP_UTF8);
     loadTasks(tasks, filename);
+    autoUpdateOverdueTasks(tasks);
+
     if (!tasks.empty()) {
         nextId = tasks.back().getId() + 1;
     }
@@ -63,28 +67,32 @@ SetConsoleOutputCP(CP_UTF8);
             case 7:
                 showDashboard(tasks);
                 break;
-                case 8:
-dueDateReminder(tasks);
-break;
-case 9:
-exportDashboardToFile(tasks);
-break;
-case 10:
-weeklyReport(tasks);
-break;
-            case 11:
+            case 8:
+                dueDateReminder(tasks);
+                break;
+            case 9:
+                exportDashboardToFile(tasks);
+                break;
+            case 10:
+               weeklyReport(tasks);
+                break;
+           case 11:
+    setWeekGoal();
+    break;
+        case 12:
+        showWeekGoal();
+        break;   
+            case 13:
                 cout << "Exiting program. Goodbye!\n";
                 break;
-
             default:
                 cout << "Invalid choice! Try again.\n";
         }
 
-    } while (choice != 11);
+    } while (choice != 13);
 
     return 0;
 }
-
 
 void showMenu() {
     cout << "\n==== Simple Task Manager ====\n";
@@ -95,10 +103,12 @@ void showMenu() {
     cout << "5. Search Task\n";
     cout << "6. Sort Tasks by Priority\n";
     cout << "7. Show Dashboard\n";
-    cout<<"8. DueDateReminders\n";
-    cout<<"9. Export Dashboard Report\n";
-    cout<<"10. weeklyReport(tasks)\n";
-    cout << "11. Exit\n";
+    cout << "8. DueDateReminders\n";
+    cout << "9. Export Dashboard Report\n";
+    cout << "10. weeklyReporttasks\n";
+    cout<<" 11. set Weekly Goal\n";
+    cout <<" 12. View Weekly Goal\n";
+    cout << "13. Exit\n";
 }
 
 void addTask() {
@@ -115,7 +125,6 @@ void addTask() {
     Task t(nextId, name, "Pending", priority, dueDate);
     tasks.push_back(t);
     nextId++;
-
     saveTasks(tasks, filename);
     cout << "Task added successfully!\n";
 }
@@ -144,16 +153,29 @@ void completeTask() {
     cin >> id;
     cin.ignore();
 
+    bool found = false;
     for (auto& task : tasks) {
         if (task.getId() == id) {
             task.setStatus("Completed");
-            saveTasks(tasks, filename);
-            cout << "Task marked as completed!\n";
-            return;
+            found = true;
+            break;
         }
     }
 
-    cout << "Task ID not found!\n";
+    if (found) {
+        saveTasks(tasks, filename);
+        cout << "Task marked as completed!\n";
+updateWeekGoal();
+        int completedToday = count_if(tasks.begin(), tasks.end(), []
+        
+         (const Task& t){
+           return t.getStatus() == "Completed"; 
+        });
+        int streak = recalcStreak(completedToday);
+        cout << "Current Productivity Streak: " << streak << " day(s)\n";
+    } else {
+        cout << "Task ID not found!\n";
+    }
 }
 
 void deleteTask() {
@@ -161,23 +183,35 @@ void deleteTask() {
         cout << "No tasks found!\n";
         return;
     }
-
     int id;
     viewTask();
     cout << "Enter Task ID to delete: ";
     cin >> id;
     cin.ignore();
 
+    bool found = false;
     for (int i = 0; i < tasks.size(); i++) {
         if (tasks[i].getId() == id) {
             tasks.erase(tasks.begin() + i);
-            saveTasks(tasks, filename);
-            cout << "Task deleted successfully!\n";
-            return;
+            found = true;
+            break;
         }
     }
 
-    cout << "Task ID not found!\n";
+    if (found) {
+        saveTasks(tasks, filename);
+        cout << "Task deleted successfully!\n";
+  
+        int completedToday = count_if(tasks.begin(), tasks.end(),[]
+      
+      (const Task& t) { 
+      return t.getStatus() == "Completed"; 
+    });
+        int streak = recalcStreak(completedToday);
+        cout << "Current Productivity Streak: " << streak << " day(s)\n";
+    } else {
+        cout << "Task ID not found!\n";
+    }
 }
 
 void searchTask(const vector<Task>& tasks) {
@@ -252,52 +286,62 @@ void sortByPriority(vector<Task>& tasks) {
     cout << "Tasks sorted by priority successfully!\n";
 }
 
-
-
-
-
 void setColor(int color){
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
 }
 
-int dateToNumber(string date){
-    int d, m,y;
-    char dash;
-    stringstream ss(date);
-    ss >> d >> dash >> m >> dash >> y;
-    return y * 10000 + m * 100 + d;
-}
 void dueDateReminder(const vector<Task> & tasks){
     if(tasks.empty()){
         cout<<" No tasks available\n";
         return;
     }
-  string today = getTodayDate();
+
+    string today = getTodayDate();
     int todayNum = dateToNumber(today);
     bool found = false;
     cout <<"\n AUTO DUE DATE REMINDER\n";
     cout<<" Today: " << today <<"\n\n";
-   
+
     for(const auto& t:tasks){
         int dueNum = dateToNumber(t.getDueDate());
         if(t.getStatus() == "Pending"){
             if(dueNum < todayNum) {
                 setColor(12);
-   cout<<" ⚠️  OverDUE: "
-            <<t.getName()
-            <<" (Due: " << t.getDueDate() << ")\n";
-            found = true;
+                cout<<" ⚠️  OverDUE: " <<t.getName() <<" (Due: " << t.getDueDate() << ")\n";
+                found = true;
+            }
+            else if(dueNum == todayNum){
+                setColor(14);
+                cout<<" 🔔 DUE TODAY  "<<t.getName()<<endl;
+                found = true;
+            }
         }
-           
-          else if(dueNum == todayNum){
-            setColor(14);
-            cout<<" 🔔 DUE TODAY  "<<t.getName()<<endl;
-found = true;
+    }
+    setColor(7);
+    if(!found)
+        cout<<" NO due reminders today\n";
+}
+
+int dateToNumber(const string& date) {
+    int d, m, y;
+    char c1, c2;
+    stringstream ss(date);
+    ss >> d >> c1 >> m >> c2 >> y;
+    if (ss.fail() || c1 != '/' || c2 != '/')
+        return -1;
+    return y * 10000 + m * 100 + d;
+}
+
+void autoUpdateOverdueTasks(vector<Task>& tasks){
+    int todayNum = dateToNumber(getTodayDate());
+    for(auto& t: tasks){
+        if(t.getStatus() == "Pending" && !t.getDueDate().empty()){
+            int dueNum = dateToNumber(t.getDueDate());
+            if(dueNum < todayNum){
+                t.setStatus("Overdue");
+            }
         }
     }
 }
-setColor(7);
-    if(!found)
-    cout<<" NO due reminders today\n";
-}
+
 
