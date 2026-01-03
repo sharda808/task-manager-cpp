@@ -15,7 +15,9 @@ Sleep(60000); // wait 60,000 ms = 1 minute
 cout<<"\n\n Focus Completed!\n";
 ofstream file("foucs_log.txt", ios::app);
 if(file.is_open()){
-file << "Focus session: " << minutes << " minutes completed\n";
+file << "Focus session: " << minutes << " "
+<< (minutes == 1 ? "minute" : "minutes")
+<< " completed\n";
 file.close();
 }
 else{
