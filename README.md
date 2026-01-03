@@ -15,6 +15,7 @@ This project solves that using logic-driven task management instead of complex U
 - Weekly productivity goals
 - Productivity streak tracking
 - smart insights(auto-generated & saved)
+- Focus Mode(distraction-free workflow)
  - File handling(persistent storage)
 
    ⚙️Tech Stack
