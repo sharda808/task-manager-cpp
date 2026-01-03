@@ -23,7 +23,7 @@ This project solves that using logic-driven task management instead of complex U
 - Plateform: windows(Console)
 
  ▶️ How to run
-g++ *.cpp -o taskManager
+ g++ *.cpp -o taskManager
 ./taskManager.exe
 
 👩‍💻 Author
