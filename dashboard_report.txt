@@ -1,13 +1,13 @@
 DASHBOARD REPORT
 =================
-Total Tasks     : 1
+Total Tasks     : 3
 Completed Tasks : 1
-Pending Tasks   : 0
+Pending Tasks   : 2
 Overdue Tasks   : 0
 
 Priority Summary:
-High   : 1
-Medium : 0
+High   : 2
+Medium : 1
 Low    : 0
 
-Productivity Score: 100%
+Productivity Score: 33%

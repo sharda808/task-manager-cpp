@@ -10,6 +10,7 @@
 #include "task.h"
 #include "file_manager.h"
 #include "Goal.h"
+#include "focus.h"
 using namespace std;
 
 vector<Task> tasks;
@@ -82,14 +83,17 @@ int main() {
         case 12:
         showWeekGoal();
         break;   
-            case 13:
+        case 13:
+        startFocusMode();
+        break;
+            case 14:
                 cout << "Exiting program. Goodbye!\n";
                 break;
             default:
                 cout << "Invalid choice! Try again.\n";
         }
 
-    } while (choice != 13);
+    } while (choice != 14);
 
     return 0;
 }
@@ -108,7 +112,8 @@ void showMenu() {
     cout << "10. weeklyReporttasks\n";
     cout<<" 11. set Weekly Goal\n";
     cout <<" 12. View Weekly Goal\n";
-    cout << "13. Exit\n";
+    cout<<"13. Focus Mode\n";
+    cout << "14. Exit\n";
 }
 
 void addTask() {
